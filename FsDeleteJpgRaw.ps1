@@ -35,7 +35,7 @@ $baseName = [System.IO.Path]::GetFileNameWithoutExtension($Path)
 # Collect files with same base name and allowed extensions
 $filesToDelete = @()
 
-Get-ChildItem -Path $folder -File | ForEach-Object {
+Get-ChildItem -Path $folder -Filter "$baseName.*" -File | ForEach-Object {
     $currentBase = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)
     $ext = [System.IO.Path]::GetExtension($_.Name).ToLowerInvariant()
     if ($currentBase -eq $baseName -and $Extensions -contains $ext) {
@@ -53,6 +53,12 @@ $confirmMessage = "Delete the following {0} file(s)?`n`n{1}" -f $filesToDelete.C
 
 Add-Type -AssemblyName System.Windows.Forms | Out-Null
 
+# Hidden TopMost form so dialogs appear above FastStone
+$topForm = New-Object System.Windows.Forms.Form -Property @{
+    TopMost = $true; Size = '0,0'; ShowInTaskbar = $false
+}
+$topForm.Show()
+
 $needConfirm = $false
 
 if ($Mode -eq "Bin") {
@@ -68,12 +74,14 @@ elseif ($Mode -eq "Permanent") {
 
 if ($needConfirm) {
     $result = [System.Windows.Forms.MessageBox]::Show(
+        $topForm,
         $confirmMessage,
         "Confirm Delete",
         [System.Windows.Forms.MessageBoxButtons]::YesNo,
         [System.Windows.Forms.MessageBoxIcon]::Warning
     )
     if ($result -ne [System.Windows.Forms.DialogResult]::Yes) {
+        $topForm.Close(); $topForm.Dispose()
         exit 0
     }
 }
@@ -82,15 +90,36 @@ if ($Mode -eq "Bin") {
     # Send to Recycle Bin
     Add-Type -AssemblyName Microsoft.VisualBasic | Out-Null
     foreach ($file in $filesToDelete) {
-        [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile(
-            $file,
-            [Microsoft.VisualBasic.FileIO.UIOption]::OnlyErrorDialogs,
-            [Microsoft.VisualBasic.FileIO.RecycleOption]::SendToRecycleBin
-        )
+        try {
+            [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile(
+                $file,
+                [Microsoft.VisualBasic.FileIO.UIOption]::OnlyErrorDialogs,
+                [Microsoft.VisualBasic.FileIO.RecycleOption]::SendToRecycleBin
+            )
+        } catch {
+            # OnlyErrorDialogs already shows per-file errors; catch prevents loop abort
+        }
     }
 }
 elseif ($Mode -eq "Permanent") {
+    $failed = @()
     foreach ($file in $filesToDelete) {
-        Remove-Item -LiteralPath $file -Force -ErrorAction SilentlyContinue
+        try {
+            Remove-Item -LiteralPath $file -Force -ErrorAction Stop
+        } catch {
+            $failed += [System.IO.Path]::GetFileName($file)
+        }
+    }
+    if ($failed.Count -gt 0) {
+        [System.Windows.Forms.MessageBox]::Show(
+            $topForm,
+            "Could not delete:`n" + ($failed -join "`n"),
+            "Delete Error",
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Error
+        ) | Out-Null
     }
 }
+
+$topForm.Close()
+$topForm.Dispose()
