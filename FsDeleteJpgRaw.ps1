@@ -53,12 +53,6 @@ $confirmMessage = "Delete the following {0} file(s)?`n`n{1}" -f $filesToDelete.C
 
 Add-Type -AssemblyName System.Windows.Forms | Out-Null
 
-# Hidden TopMost form so dialogs appear above FastStone
-$topForm = New-Object System.Windows.Forms.Form -Property @{
-    TopMost = $true; Size = '0,0'; ShowInTaskbar = $false
-}
-$topForm.Show()
-
 $needConfirm = $false
 
 if ($Mode -eq "Bin") {
@@ -74,14 +68,12 @@ elseif ($Mode -eq "Permanent") {
 
 if ($needConfirm) {
     $result = [System.Windows.Forms.MessageBox]::Show(
-        $topForm,
         $confirmMessage,
         "Confirm Delete",
         [System.Windows.Forms.MessageBoxButtons]::YesNo,
         [System.Windows.Forms.MessageBoxIcon]::Warning
     )
     if ($result -ne [System.Windows.Forms.DialogResult]::Yes) {
-        $topForm.Close(); $topForm.Dispose()
         exit 0
     }
 }
@@ -112,7 +104,6 @@ elseif ($Mode -eq "Permanent") {
     }
     if ($failed.Count -gt 0) {
         [System.Windows.Forms.MessageBox]::Show(
-            $topForm,
             "Could not delete:`n" + ($failed -join "`n"),
             "Delete Error",
             [System.Windows.Forms.MessageBoxButtons]::OK,
@@ -120,6 +111,3 @@ elseif ($Mode -eq "Permanent") {
         ) | Out-Null
     }
 }
-
-$topForm.Close()
-$topForm.Dispose()
