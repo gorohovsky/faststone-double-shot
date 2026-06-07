@@ -1,0 +1,7 @@
+# Statically link the C runtime so each .exe is self-contained — no MinGW or
+# Visual C++ redistributable DLLs needed on the target machine.
+[target.x86_64-pc-windows-gnu]
+rustflags = ["-C", "target-feature=+crt-static"]
+
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]

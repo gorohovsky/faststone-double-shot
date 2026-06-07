@@ -1,0 +1,32 @@
+[package]
+name = "faststone_double_shot"
+version = "1.0.0"
+edition = "2021"
+description = "Delete paired JPG+RAW files together for FastStone Image Viewer"
+license = "MIT"
+publish = false
+
+[lib]
+name = "faststone_double_shot"
+path = "src/lib.rs"
+
+# Two thin binaries that differ only by deletion mode (see src/del_bin.rs / src/del_perm.rs).
+[[bin]]
+name = "FsDelBin"
+path = "src/del_bin.rs"
+
+[[bin]]
+name = "FsDelPerm"
+path = "src/del_perm.rs"
+
+# No external dependencies: the two Win32 calls are declared directly (see
+# src/windows_os.rs), so the crate links only against the toolchain's own
+# import libraries.
+
+# Small, self-contained release binaries for a single-purpose tool.
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
