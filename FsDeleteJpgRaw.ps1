@@ -29,8 +29,16 @@ if (-not (Test-Path -LiteralPath $Path)) {
 }
 
 # Use .NET instead of Split-Path to avoid parameter set issues
-$folder   = [System.IO.Path]::GetDirectoryName($Path)
-$baseName = [System.IO.Path]::GetFileNameWithoutExtension($Path)
+$folder    = [System.IO.Path]::GetDirectoryName($Path)
+$baseName  = [System.IO.Path]::GetFileNameWithoutExtension($Path)
+$targetExt = [System.IO.Path]::GetExtension($Path).ToLowerInvariant()
+
+# Only act on supported formats. If the selected file isn't a supported type,
+# do nothing -- matches the Rust build, so neither version deletes a file's
+# neighbours while leaving the selection itself behind.
+if ($Extensions -notcontains $targetExt) {
+    exit 0
+}
 
 # Collect files with same base name and allowed extensions
 $filesToDelete = @()

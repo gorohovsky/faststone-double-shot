@@ -36,6 +36,7 @@ New-Item case7_many.jpg, case7_many.jpeg, case7_many.cr2, case7_many.nef   # 3+ 
 New-Item case8_mixed.jpg, case8_mixed.cr2, case8_mixed.tiff  # tiff ignored → jpg + cr2 only
 New-Item "case 9 spaces.jpg", "case 9 spaces.cr2"      # spaces → both
 New-Item "case10_(edit)-final.jpg", "case10_(edit)-final.arw"  # special chars → both
+New-Item case11_unsupported.tiff, case11_unsupported.jpg, case11_unsupported.cr2  # run on the .tiff → nothing deleted
 ```
 
 Run the tool on a case and check the result, e.g.:

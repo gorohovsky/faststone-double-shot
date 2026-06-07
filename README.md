@@ -35,7 +35,7 @@ It comes in two interchangeable flavours: ready-to-use **PowerShell scripts** (n
 | **Dependencies** | PowerShell 5.1+ (built into Windows 10/11) | None (statically linked, self-contained) |
 | **Changing the format list** | Edit `FsDeleteJpgRaw.ps1`, no rebuild | Edit `src/matching.rs`, then rebuild |
 
-Both deliver the same deletion modes, the same confirmation thresholds, and the same `(filename)` FastStone setup. The Rust build additionally avoids the CMD flash and ignores files whose type isn't in the supported list (rather than acting on their neighbours).
+Both deliver the same deletion modes, the same confirmation thresholds, the same matching behaviour (including doing nothing when the selected file isn't a supported type), and the same `(filename)` FastStone setup. The Rust build additionally runs windowless (no CMD flash) and needs no PowerShell.
 
 ---
 
